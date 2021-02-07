@@ -1,0 +1,498 @@
+const dbd = require("dbd.js")
+const keepalive = require('./keepalive.js')
+
+//bot is online
+const bot = new dbd.Bot({
+token: "", 
+prefix: "$getServerVar[prefix]" 
+});
+
+//what ur doing???
+//status
+
+
+bot.status({
+      text: "Servers $serverCount, Members $allMembersCount",
+      type: "LISTENING",
+      time: 12 
+})
+
+bot.status({
+      text: "Mention me for prefix!",
+      type: "WATCHING",
+      time: 12 
+})
+
+//command handlers
+
+
+bot.onMessage()
+
+const fs = require('fs')
+
+const folders = fs.readdirSync("./commands/")
+
+for (const files of folders) {
+const folder = fs.readdirSync(`./commands/${files}/`).filter(file => file.endsWith(".js")) 
+
+for (const commands of folder) {
+const command = require(`./commands/${files}/${commands}`) 
+bot.command({
+ name: command.name,
+ aliases: command.aliases,
+ code: command.code,
+ nonPrefixed: command.nonPrefixed,
+ usage: command.usage,
+ description: command.description
+})
+}
+}
+
+
+bot.readyCommand({
+channel: "805533374475141170",
+code: `
+$title[**Bot Status**]$description[The bot has been restart to update or a previous issue has been fixed!
+
+__**Status....**__
+$replaceText[$djsEval[
+ const {MessageEmbed} = require('discord.js')
+
+ if ($ping > 300) {
+ const pingA = new MessageEmbed() 
+ .setTitle(':ping_pong:')
+ .setDescription(":red_circle: | " + '$ping' + " ms")
+ .setColor("RED")
+ .setTimestamp()
+ d.message.channel.send(pingA)
+ 
+ } else if ($ping > 200) {
+ const pingMO = new MessageEmbed() 
+ .setTitle(':ping_pong:')
+ .setDescription(":yellow_circle: | " + '$ping' + " ms")
+ .setColor("YELLOW")
+ .setTimestamp()
+ d.message.channel.send(pingMO)
+
+ } else if ($ping < 200) {
+ const pingM = new MessageEmbed() 
+ .setTitle(':ping_pong:')
+ .setDescription(":green_circle: | " + '$ping' + " ms")
+ .setColor("GREEN")
+ .setTimestamp()
+ d.message.channel.send(pingM)
+
+ } else {
+ const pingN = new MessageEmbed() 
+ .setTitle(':ping_pong:')
+ .setDescription(":white_circle: | " + '$ping' + " ms")
+ .setColor("#fefefe")
+ .setTimestamp()
+ d.message.channel.send(pingN)
+ }
+];Promise { <pending> };]
+
+__**Totals**__
+$serverCount Servers
+$allMembersCount Members
+$editIn[3s;Offline :red_circle:;Starting :orange_circle:;Online :green_circle:]
+] $addTimestamp
+$color[00ff00]
+$wait[10s]
+`
+})
+
+
+//custom prefix
+
+
+bot.command({
+  name: "setprefix",
+  code: `
+  $title[**Prefix Changed**]
+  $description[New prefix: **$message[1]**]
+  $footer[Prefix Changed by $usertag[$authorID]]
+  $color[$random[10000;50000]]
+  $setServerVar[prefix;$message]
+  $onlyPerms[admin;You don't have the required permissions \`ADMINISTRATOR\`]`
+})
+
+
+//variables
+
+
+bot.variables({
+prefix: ".",
+modlogs: "804227009013874698",
+warn: "0",
+reason: "",
+adminsetup: "805157230357381161",
+modlog: "7804227009013874698",
+ticketchannel: "",
+warn:"0",
+reason1:"",
+reason2:"",
+reason3:"",
+reason4:"",
+reason5:"",
+reason6:"",
+reason7:"",
+reason8:"",
+reason9:"",
+reason10:"",
+title: "",
+description: "",
+afk: "",
+time: "",
+//Tickets systems
+unsolvedcategory: "",
+reportscategory: "",
+appcategory: "",
+//idk
+statusLoop: "",
+//suggestion
+suggestchannel: "",
+suggest_system: "no",
+hugs: "0",
+value: "0",
+//Welcome/leave systems 
+welchan: "",
+leachan: "",
+//Economy system
+money: "0",
+bank: "0",
+//application system
+apply1: "",
+apply2: "",
+apply3: "",
+apply4: "",
+apply5: "",
+apply6: "",
+apply7: "",
+application: "no",
+applicationlog: "",
+//moderation system
+mute: "",
+//levels
+ rch: "",
+ rmsg: "Congrats {user.tag}🎉, you leveled up to level {level}",
+ lvl: "0",
+ exp: "0",
+ rexp: "40",
+ rsystem: "0"
+})
+
+
+//tickets
+
+
+bot.command({
+name: "ticket",
+code: `$awaitMessages[$authorID;15s;yes,no;TicketYes,Ticketno;Command Timed Out]
+You want to open ticket? \`Yes\` or \`No\`
+$deletecommand
+`
+})
+bot.awaitedCommand({
+name: "Ticketno",
+code: `Okay You don't want open ticket.
+$deletecommand
+` 
+})
+bot.awaitedCommand({
+name: "TicketYes",
+code: `$newTicket[ticket-$username[$authorID];{title:Ticket opened!}{description:Hello, <@$authorID>. Here is your ticket!:tickets: Please give the information about your problem or feedback. If you want to apply run \`.apply\`. The Admins or the Moderators will review your ticket shortly!
+
+Thanks in advance for being patient}{footer:Use .close to close your ticket};$getServerVar[ticketchannel];no;<@$authorID>, I failed to create your ticket! Try again]
+$sendMessage[Ticket Successfully opened! Hello, <@$authorID>. Go to **$toLowercase[#ticket-$username[$authorID]]** to describe your issue!;Something went wrong]
+$deletecommand
+`
+})
+
+
+bot.command({
+name: "close",
+code: `$awaitMessages[$authorID;15s;yes,no;yes,no;Command Timed Out]
+You want to Close Ticket? \`Yes\` or \`No\`
+`
+})
+bot.awaitedCommand({
+name: "no",
+code: `Okay You don\'t want close ticket
+
+` 
+})
+
+bot.awaitedCommand({
+name: "yes",
+code: `$closeTicket[This is not ticket! it need be Ticket!]
+`
+})
+
+bot.command({
+  name: "eval",
+  code: `
+  $title[Eval]
+  $description[$editIn[5s;Running :green_circle:;Stopping :orange_circle:;Stopped :red_circle:]]
+  $footer[Runned by: $usertag[$authorID]]`
+})
+
+bot.command({
+name: "embed",
+code: `$awaitMessages[$authorID;1m;everything;Embed1;Failed Create Embed *Try Again*]
+What title you want to be?
+`
+})
+bot.awaitedCommand({
+name: "Embed1",
+code: `$awaitMessages[$authorID;1m;everything;Embed2;:x: Timed out]
+$setUserVar[title;$message]
+What description you want to be?
+` 
+})
+bot.awaitedCommand({
+name: "Embed2",
+code: `$title[$getUserVar[title]]
+$description[$message]`
+
+})
+
+bot.onMessageUpdate()
+bot.onGuildJoin()
+bot.botJoinCommand({
+channel: "807031890691096606",
+code:`
+$title[Bot Added]
+ $thumbnail[$serverIcon]
+$addField[**Server Location**;$serverRegion]
+$addField[**Server Owner**;<@$ownerID>($ownerID)]
+$addField[**Server Name**;$serverName]
+$color[GOLD]
+$addTimestamp`
+});
+
+bot.onGuildLeave()
+bot.botLeaveCommand({
+channel: "807031906440183809",
+code:`
+$title[Bot Removed]
+ $thumbnail[$serverIcon]
+$addField[**Server Location**;$serverRegion]
+$addField[**Server Owner**;<@$ownerID>($ownerID)]
+$addField[**Server Name**;$serverName]
+$color[RED]
+$addTimestamp`
+});
+
+bot.command({
+name:"stats",
+code:`
+$loop[1;loop]
+$setServerVar[statusLoop;$splitText[1]]
+$textSplit[$sendMessage[{title:Status....}{description:
+**$ping Ms
+$uptime Uptime
+$cpu Cpu
+$ram Ram
+};yes]; ]
+$deletecommand
+$suppressErrors[Status Offline]
+`
+})
+
+bot.awaitedCommand({
+name:"loop",
+code:`
+$loop[1;loop]
+$wait[2s]
+$editMessage[$getServerVar[statusLoop];{title:Status}{description:
+$ping **Ms** 
+$uptime **Uptime**
+$cpu **Cpu** 
+$ram **Ram**
+}]
+$suppressErrors[Status Offline]
+`
+})
+
+bot.joinCommand({ 
+  channel: "$getServerVar[welchan]", 
+  code: `
+	$description[<@$authorID> Thanks for joining us!]
+	`
+})
+bot.onJoined() 
+
+bot.leaveCommand({ 
+  channel: "$getServerVar[leachan]", 
+  code: `
+ $description[$username just left the server!]`
+})
+bot.onLeave()
+
+bot.botJoinCommand({
+ channel: "$randomChannelID",
+ code: `
+ $title[Thanks for adding me!]
+$description[My prefix: \`$getServerVar[prefix]\`]
+$color[F8F8F9]
+$suppressErrors[Sent Message Error!]
+ `
+ })
+bot.onGuildJoin()
+
+bot.command({
+	name: "apply",
+	code: `$awaitMessages[$authorID;1m;everything;application1;Application Failed *Try Again*]
+	$description[Why did you want be Staff/Support?]
+	$onlyIf[$checkContains[$channelName;ticket]==true;This command can only be used in tickets]
+	$onlyIf[$getServerVar[application]==true;Application is not enabled!]
+	`
+})
+
+bot.awaitedCommand({
+	name: "application1",
+	code: `$awaitMessages[$authorID;1m;everything;application2;Application Failed *Try Again*]
+	$setUserVar[apply1;$message]
+	Your Discord User#tag`
+})
+
+bot.awaitedCommand({
+	name: "application2",
+  code: `$awaitMessages[$authorID;1m;everything;application3;Application Failed *Try Again*]
+	$setUserVar[apply2;$message]
+	What you will do, If spamming?
+	`
+})
+
+bot.awaitedCommand({
+	name: "application3",
+  code: `$awaitMessages[$authorID;1m;everything;application4;Application Failed *Try Again*]
+	$setUserVar[apply3;$message]
+  What you will do, If nsfw was posted	
+	`
+})
+
+bot.awaitedCommand({
+	name: "application4",
+	code: `
+	$useChannel[$getServerVar[applicationlog]]
+	$description[Why did you want be staff/support
+	$getUserVar[apply1]
+
+	User's Usertag
+	$getUserVar[apply2]
+	
+	What you will do, If someone spamming
+	$getUserVar[apply3]
+
+	What you will do if Nsfw was posted!
+	$message]
+	
+	`
+})
+
+
+//Music
+
+bot.musicStartCommand({ 
+ channel: "$channelID",
+ code: `$title[Now Playing Music!]
+ $description[Now Listening: $songInfo[title]
+ Artist: $songInfo[publisher]
+ Order By: <@$songInfo[userID]>]
+ $addField[Link;[Click Here!\\]($songInfo[url])]
+ $color[RANDOM]
+ $addTimestamp
+ $image[$songInfo[thumbnail]]` 
+})
+bot.onMusicStart()
+
+//rank system
+
+
+bot.command({
+ name: "setrank",
+ usage: "setrank <channel>",
+ description: "settings the levelup channel",
+ code: `$description[Rank channel has been set up to <#$mentionedChannels[1;yes]>]
+$color[01ff00]
+$setServerVar[rch;$mentionedChannels[1;yes]]
+$setServerVar[rsystem;1]
+$onlyBotPerms[mentioneveryone;{description:I dont have permission \`MENTION_EVERYONE\`}{color:ff2050}]
+$onlyPerms[manageserver;{description:You need \`MANAGE_SERVER\` permission}{color:ff2050}]
+$cooldown[5s;Please wait **%time%**]`
+})
+ 
+bot.command({
+ name: "resetrank",
+ usage: "resetrank",
+ description: "reset the levelup channel",
+ code: `$description[Rank channel has been set up to <#$mentionedChannels[1;yes]>]
+$color[01ff00]
+$setServerVar[rch;]
+$setServerVar[rmsg;$getVar[rmsg]]
+$setServerVar[rsystem;0]
+$onlyIf[$getServerVar[rsystem]>=1;{description:Leveling system is __disabled__ on this server}{color:ff2050}]
+$onlyBotPerms[mentioneveryone;{description:I dont have permission \`MENTION_EVERYONE\`}{color:ff2050}]
+$onlyPerms[manageserver;{description:You need \`MANAGE_SERVER\` permission}{color:ff2050}]
+$cooldown[5s;Please wait **%time%**]`
+})
+ 
+bot.command({
+ name: "$alwaysExecute",
+ code: `$useChannel[$getServerVar[rch]]
+$replaceText[$replaceText[$replaceText[$replaceText[$getServerVar[rmsg];{user.tag};$userTag];{user.mention};<@$authorID>];{level};$getUserVar[lvl]];{exp};$getUserVar[exp]]
+$setUserVar[lvl;$sum[$getUserVar[lvl];1]]
+$setUserVar[rexp;$multi[$getUserVar[rexp];2]]
+$onlyIf[$getUserVar[exp]>=$getUserVar[rexp];]
+$onlyForServers[$guildID;]` 
+})
+ 
+bot.command({
+ name: "$alwaysExecute",
+ code: `$setUserVar[exp;$sum[$getUserVar[exp];$random[1;4]]]
+$onlyIf[$getServerVar[rsystem]>=1;]
+$onlyForServers[$guildID;]`
+})
+ 
+bot.awaitedCommand({
+ name: "errorrank",
+ code: `$setServerVar[rch;]
+$onlyForServers[$guildID;]`
+})
+ 
+bot.command({
+ name: "rankmessage",
+ usage: "setrankmsg <message>",
+ description: "message for the leveled up",
+ code: `$description[You have been setted the message to:
+\`$message\`]
+$color[01ff00]
+$setServerVar[rmsg;$message]
+$onlyIf[$message!=;You can also use this variables:
+\`\`\`
+{user.tag} = $userTag
+{user.mention} = <@$authorID>
+{level} = 1
+{exp} = 25
+\`\`\`
+Current msg is:
+\`$getServerVar[rmsg]\`]
+$onlyBotPerms[mentioneveryone;managemessages;{description:I need permission \`MANAGE_MESSAGES\`/\`MENTION_EVERYONE\`}{color:ff2050}]
+$onlyPerms[manageserver;{description:You need \`MANAGE_SERVER\` permission}{color:ff2050}]
+$cooldown[5s;Please wait **%time%**]`
+})
+ 
+bot.command({
+ name: "rank",
+ aliases: ["level"],
+ usage: "rank (user)",
+ description: "see the current level and exp",
+ code: `$image[https://vacefron.nl/api/rankcard?username=$replaceText[$username[$mentioned[1;yes]]; ;+;-1]&avatar=$userAvatar[$mentioned[1;yes]]?size=4096&level=$getUserVar[lvl;$mentioned[1;yes]]&rank=&currentxp=$getUserVar[exp;$mentioned[1;yes]]&nextlevelxp=$getUserVar[rexp;$mentioned[1;yes]]&previouslevelxp=0&custombg=https://media.discordapp.net/attachments/806637174170452040/807748047131770952/R5b90d3cab4c93cc1f47b3d31807a0f99?width=1015&height=609.jpg&xpcolor=ffffff&isboosting=true]
+$onlyIf[$getServerVar[rsystem]>=1;{description:Leveling system is __disabled__}{color:ff2050}]
+$cooldown[5s;]`
+})
+ 
+ 
+ 
